@@ -9,6 +9,39 @@ function toOSRMFormat(points) {
     .join(";");
 }
 
+// Ramer-Douglas-Peucker line simplification
+function simplifyPolyline(points, tolerance = 0.0001) {
+  if (points.length < 3) return points;
+
+  const dmax = (p1, p2, p3) => {
+    const a = Math.abs((p2.longitude - p1.longitude) * (p1.latitude - p3.latitude) - 
+                       (p1.longitude - p3.longitude) * (p2.latitude - p1.latitude));
+    const b = Math.sqrt(
+      Math.pow(p2.longitude - p1.longitude, 2) + 
+      Math.pow(p2.latitude - p1.latitude, 2)
+    );
+    return a / b;
+  };
+
+  let dmax_val = 0;
+  let index = 0;
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = dmax(points[0], points[i], points[points.length - 1]);
+    if (d > dmax_val) {
+      index = i;
+      dmax_val = d;
+    }
+  }
+
+  if (dmax_val > tolerance) {
+    const rec1 = simplifyPolyline(points.slice(0, index + 1), tolerance);
+    const rec2 = simplifyPolyline(points.slice(index), tolerance);
+    return [...rec1.slice(0, -1), ...rec2];
+  } else {
+    return [points[0], points[points.length - 1]];
+  }
+}
+
 // Main function to fetch + decode route
 export async function getOSRMRoute(points) {
   try {
@@ -32,9 +65,12 @@ export async function getOSRMRoute(points) {
       longitude: lon,
     }));
 
+    // Simplify the polyline to reduce coordinate count
+    const simplified = simplifyPolyline(decoded, 0.0001);
+
     return {
       encoded,
-      decoded,    // ⬅ ready for <Polyline coordinates={decoded} />
+      decoded: simplified,    // ⬅ simplified coordinates
       distance: data.routes[0].distance,
       duration: data.routes[0].duration,
     };

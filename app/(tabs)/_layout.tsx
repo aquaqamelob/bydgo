@@ -4,12 +4,9 @@ import { Pressable } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const AC = Colors[colorScheme ?? 'light'];
+  
   const [selectedTab, setSelectedTab] = useState(0);
 
   const handleTabPress = (index: number) => {
@@ -24,7 +21,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: "blue",
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
