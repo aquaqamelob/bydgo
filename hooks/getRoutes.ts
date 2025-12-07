@@ -47,7 +47,7 @@ export async function getOSRMRoute(points) {
   try {
     const osrmCoords = toOSRMFormat(points);
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${osrmCoords}?overview=full&geometries=polyline`;
+      const url = `https://router.project-osrm.org/route/v1/walking/${osrmCoords}?overview=full&geometries=polyline&alternatives=0`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`OSRM error: ${res.status}`);

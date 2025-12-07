@@ -39,14 +39,7 @@
     "description": "Marian Rejewski, kryptolog (...) na rogu ulicy Gdańskiej i Śniadeckich.",
     "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/119/xl.jpg"
   },
-  {
-    "x": 53.12331324203649,
-    "y": 17.99951540200882,
-    "name": "Pomnik św. Jana Nepomucena",
-    "type": "historia",
-    "description": "W pobliżu Katedry (...) w północnej Polsce.",
-    "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/15800/xl.jpg"
-  },
+ 
   {
     "x": 53.12372986378946,
     "y": 18.001080842317673,
@@ -54,14 +47,6 @@
     "type": "kultura",
     "description": "Przechodząc przez most Jerzego Sulimy-Kamińskiego (...) MSZ.",
     "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/15793/xl.jpg"
-  },
-  {
-    "x": 53.12925754230553,
-    "y": 18.010437870465687,
-    "name": "Pomnik Szwalbe",
-    "type": "historia",
-    "description": "Jest to pomnik Honorowego Obywatela Bydgoszczy – budowniczego filharmonii i opery.",
-    "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/15802/xl.jpg"
   },
   {
     "x": 53.12101709583563,
@@ -86,21 +71,7 @@
     "description": "Piękna prawnuczka bydgoskiej Łuczniczki (...) symbol Bydgoszczy.",
     "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/132/xl.jpg"
   },
-  {
-    "x": 53.12215186416539,
-    "y": 17.999911599320157,
-    "name": "Pomnik Walki i Męczeństwa",
-    "type": "historia",
-    "description": "Pomnik przedstawia grupę osób symbolizujących męczeństwo i walkę (...) Gliwickiej Fabryce Urządzeń Technicznych.",
-    "img": "https://visitbydgoszcz.pl/images/com_adsmanager/ads//media/photos/125/xl.jpg"
-  },
-  {
-    "x": 53.12298164797192,
-    "y": 17.99915768430003,
-    "name": "Katedra Bydgoska",
-    "type": "historia",
-    "description": "Katedra Bydgoska św. Marcina i Mikołaja (...) znacznie starsze"
-  },
+ 
   {
     "x": 53.123025386250106,
     "y": 18.002076324236903,
@@ -109,40 +80,14 @@
     "description": "Bydgoskie Spichrze nad Brdą są niemal jak herb miasta (...) powstała w miejscu nieprzypadkowym"
   },
   {
-    "x": 53.12725213837774,
-    "y": 17.99603340334358,
-    "name": "Śluza miejska",
-    "type": "historia",
-    "description": "Śluza miejska wybudowana została (...) trwa około 20 minut"
-  },
-  {
     "x": 53.12329138609665,
     "y": 18.001691111147505,
     "name": "Budynek Poczty Polskiej",
     "type": "historia",
     "description": "Najstarsze informacje o funkcjonowaniu placówki (...) przeznaczono na ten cel po 1815 roku."
   },
-  {
-    "x": 53.119749344598446,
-    "y": 17.991143289011816,
-    "name": "Wieża ciśnień",
-    "type": "historia",
-    "description": "Wieża ciśnień to dziś jeden z obiektów Muzeum Wodociągów (...) panoramę całej Bydgoszczy."
-  },
-  {
-    "x": 53.12238976471973,
-    "y": 17.9992450033433,
-    "name": "Bydgoski Ratusz",
-    "type": "historia",
-    "description": "Budynek obecnego bydgoskiego ratusza posiada (...) 1644–1653."
-  },
-  {
-    "x": 53.11998520422573,
-    "y": 18.007579520536435,
-    "name": "Kościół garnizonowy pw. NMP Królowej Pokoju",
-    "type": "historia",
-    "description": "Kościół garnizonowy (...) ukończono w roku 1557."
-  },
+
+
   {
     "x": 53.121201751970396,
     "y": 17.999293526628374,
@@ -163,13 +108,6 @@
     "name": "Czerwony Spichrz",
     "type": "kultura",
     "description": "Obecny budynek powstał w 1861 roku (...) Galeria Sztuki Nowoczesnej."
-  },
-  {
-    "x": 53.12327168566007,
-    "y": 17.99788064197155,
-    "name": "Biały Spichrz",
-    "type": "historia",
-    "description": "Budynek powstał po 1789 roku (...) u zarania dziejów"
   },
   {
     "x": 53.12464803529508,

@@ -14,12 +14,13 @@ import { metersBetween } from '@/utils/geo';
 export default function HomeScreen() {
   const { userLocation, errorMsg, region, setRegion } = useUserLocation();
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
+  const [visitedKeys, setVisitedKeys] = useState<Set<string>>(new Set());
 
   const [routeCoords, setRouteCoords] = useState([]);
 
   const initialRegion: Region = useMemo(() => ({
-    latitude: 53.1235,
-    longitude: 18.0084,
+    latitude: 53.122340158659746,
+    longitude: 18.00006289506423,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   }), []);
@@ -31,30 +32,60 @@ export default function HomeScreen() {
     return filtered.map((item) => ({ latitude: item.x, longitude: item.y }));
   }, []);
 
-  // Determine nearest POI to the user (prefer within 1km)
-  const nearestPoint = useMemo(() => {
-    if (!userLocation || points.length === 0) return null;
-    let nearest: { latitude: number; longitude: number } | null = null;
+  const pointKey = (p: { latitude: number; longitude: number }) => `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`;
+
+  // Only route through unvisited points
+  const unvisitedPoints = useMemo(() => {
+    return points.filter((p) => !visitedKeys.has(pointKey(p)));
+  }, [points, visitedKeys]);
+
+  // Build a greedy nearest-neighbor path starting from userLocation through all points.
+  const routePoints = useMemo(() => {
+    if (!userLocation || unvisitedPoints.length === 0) return [];
+    const remaining = [...unvisitedPoints];
+    const ordered: { latitude: number; longitude: number }[] = [];
+    let current = userLocation;
+    while (remaining.length > 0) {
+      let bestIdx = -1;
+      let bestDist = Infinity;
+      for (let idx = 0; idx < remaining.length; idx++) {
+        const d = metersBetween(current, remaining[idx]);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = idx;
+        }
+      }
+      const next = remaining.splice(bestIdx, 1)[0];
+      ordered.push(next);
+      current = next;
+    }
+    return [userLocation, ...ordered];
+  }, [userLocation, unvisitedPoints]);
+
+  // Auto-mark as visited when user gets very close to a point
+  useEffect(() => {
+    if (!userLocation || unvisitedPoints.length === 0) return;
+    let nearestIdx = -1;
     let nearestDist = Infinity;
-    for (const p of points) {
-      const d = metersBetween(userLocation, p);
+    for (let i = 0; i < unvisitedPoints.length; i++) {
+      const d = metersBetween(userLocation, unvisitedPoints[i]);
       if (d < nearestDist) {
         nearestDist = d;
-        nearest = p;
+        nearestIdx = i;
       }
     }
-    const RADIUS_METERS = 1000;
-    // If within radius, keep; otherwise still use nearest overall so user gets a route
-    return nearest;
-  }, [userLocation, points]);
+    const VISIT_RADIUS_METERS = 30;
+    if (nearestIdx >= 0 && nearestDist <= VISIT_RADIUS_METERS) {
+      const key = pointKey(unvisitedPoints[nearestIdx]);
+      setVisitedKeys((prev) => {
+        const next = new Set(prev);
+        next.add(key);
+        return next;
+      });
+    }
+  }, [userLocation, unvisitedPoints]);
 
-  // Route only from user to the nearest single point
-  const routePoints = useMemo(() => {
-    if (userLocation && nearestPoint) return [userLocation, nearestPoint];
-    return [];
-  }, [userLocation, nearestPoint]);
-
-  const { routeCoords: osrmRoute } = useOsrmRoute(routePoints as any);
+  const { routeCoords: osrmRoute, isLoading: routeLoading, error: routeError } = useOsrmRoute(routePoints as any);
   useEffect(() => {
     setRouteCoords(osrmRoute as any);
   }, [osrmRoute]);
@@ -73,7 +104,9 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={{color: "white"}}>{userLocation ? `${userLocation.latitude}, ${userLocation.longitude}` : '...'}</Text>
+      {/* <Text style={{color: "white"}}>{userLocation ? `${userLocation.latitude}, ${userLocation.longitude}` : 'Waiting for location...'}</Text> */}
+      {routeLoading && <Text style={{color: "white"}}>Loading route…</Text>}
+      {routeError && <Text style={{color: "white"}}>Route error: {routeError}</Text>}
       <MapView
         style={styles.map}
         region={region || initialRegion}
@@ -83,20 +116,13 @@ export default function HomeScreen() {
       >
         <PoiMarkers points={points} data={data as any} wantedType={WANTED_TYPE} onPressMarker={setSelectedMarker} />
         
-        <Polyline
-      coordinates={routeCoords}
-    
-    strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-    strokeColors={[
-      '#7F0000',
-      '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-      '#B24112',
-      '#E5845C',
-      '#238C23',
-      '#7F0000',
-    ]}
-    strokeWidth={3}
-  />
+        {routeCoords && routeCoords.length > 1 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor="#007AFF"
+            strokeWidth={4}
+          />
+        )}
   
    </MapView>
 

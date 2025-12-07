@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Button } from 'react-native';
+import { Text, View, StyleSheet, Button } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import data from '@/constants/message.json';
+import { metersBetween } from '@/utils/geo';
 
 export default function CameraScreen() {
   const [heading, setHeading] = useState(0);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [nearestTarget, setNearestTarget] = useState<{ latitude: number; longitude: number } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
@@ -43,6 +46,22 @@ export default function CameraScreen() {
     };
   }, []);
 
+  // Compute nearest target from message.json
+  useEffect(() => {
+    if (!userLocation) return;
+    const points = data.map((item: any) => ({ latitude: item.x, longitude: item.y }));
+    let nearest = null as { latitude: number; longitude: number } | null;
+    let best = Infinity;
+    for (const p of points) {
+      const d = metersBetween(userLocation, p);
+      if (d < best) {
+        best = d;
+        nearest = p;
+      }
+    }
+    setNearestTarget(nearest);
+  }, [userLocation]);
+
   useEffect(() => {
     // Set magnetometer update interval
     Magnetometer.setUpdateInterval(100);
@@ -73,52 +92,35 @@ export default function CameraScreen() {
     );
   }
 
+  // Bearing from point A to B
+  const bearingTo = (a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) => {
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const toDeg = (rad: number) => (rad * 180) / Math.PI;
+    const lat1 = toRad(a.latitude);
+    const lat2 = toRad(b.latitude);
+    const dLon = toRad(b.longitude - a.longitude);
+    const y = Math.sin(dLon) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    let brng = toDeg(Math.atan2(y, x));
+    if (brng < 0) brng += 360;
+    return brng;
+  };
+
+  const targetBearing = userLocation && nearestTarget ? bearingTo(userLocation, nearestTarget) : null;
+  const arrowRotation = targetBearing != null ? ((targetBearing - heading + 360) % 360) : 0;
+
   return (
     <View style={styles.container}>
       {/* Camera Feed */}
       <CameraView style={styles.camera} ref={cameraRef} facing="back" />
 
-      {/* Compass Overlay */}
-      <View style={styles.compassOverlay}>
-        <View style={styles.compassContainer}>
-          {/* Rotating compass ring */}
-          <View
-            style={[
-              styles.compassRing,
-              {
-                transform: [{ rotate: `${-heading}deg` }],
-              },
-            ]}
-          >
-            {/* Cardinal directions */}
-            <Text style={[styles.cardinalText, styles.north]}>N</Text>
-            <Text style={[styles.cardinalText, styles.east]}>E</Text>
-            <Text style={[styles.cardinalText, styles.south]}>S</Text>
-            <Text style={[styles.cardinalText, styles.west]}>W</Text>
-
-            {/* Degree markers */}
-            {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((degree) => (
-              <View
-                key={degree}
-                style={[
-                  styles.degreeMarker,
-                  {
-                    transform: [
-                      { rotate: `${degree}deg` },
-                      { translateY: -90 },
-                    ],
-                  },
-                ]}
-              />
-            ))}
-          </View>
-
-          {/* Center blue dot (0 degrees / North indicator) */}
-          <View style={styles.centerDot} />
-
-          {/* Heading display */}
-          <Text style={styles.headingText}>{Math.round(heading)}°</Text>
-        </View>
+      {/* 1D Compass Line at Bottom with Arrow to nearest marker */}
+      <View style={styles.bottomCompass}>
+        <View style={styles.line} />
+        <View style={[styles.arrow, { transform: [{ rotate: `${arrowRotation}deg` }] }]} />
+        <Text style={styles.bottomText}>
+          {targetBearing != null ? `Bearing: ${Math.round(targetBearing)}° | Heading: ${Math.round(heading)}°` : 'Finding target...'}
+        </Text>
       </View>
 
       {/* Location info at bottom */}
@@ -144,68 +146,39 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
-  compassOverlay: {
+  bottomCompass: {
     position: 'absolute',
-    top: 20,
+    bottom: 80,
+    left: 20,
     right: 20,
-    zIndex: 10,
-  },
-  compassContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
+    height: 60,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: '#0099ff',
-  },
-  compassRing: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
-  cardinalText: {
+  line: {
     position: 'absolute',
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0099ff',
-  },
-  north: {
-    top: 8,
-  },
-  east: {
-    right: 8,
-  },
-  south: {
-    bottom: 8,
-  },
-  west: {
-    left: 8,
-  },
-  degreeMarker: {
-    width: 1.5,
-    height: 12,
-    backgroundColor: '#666',
-    position: 'absolute',
-  },
-  centerDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    top: 28,
+    left: 16,
+    right: 16,
+    height: 4,
     backgroundColor: '#0099ff',
-    position: 'absolute',
-    zIndex: 10,
-    shadowColor: '#0099ff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 5,
+    borderRadius: 2,
   },
-  headingText: {
+  arrow: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 18,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#ffcc00',
+  },
+  bottomText: {
     position: 'absolute',
     bottom: 6,
     fontSize: 12,

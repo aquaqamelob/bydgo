@@ -13,7 +13,7 @@ export function useOsrmRoute(points: LatLng[]) {
     let cancelled = false;
     async function loadRoute() {
       try {
-        if (!points || points.length === 0) return;
+        if (!points || points.length < 2) return;
         setIsLoading(true);
         const route = await getOSRMRoute(points);
         if (!cancelled && route) {

@@ -1,9 +1,13 @@
+import { Button } from '@react-navigation/elements';
+import { router } from 'expo-router';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 
 type Props = {
   item: any | null;
   onClose: () => void;
 };
+
+
 
 export default function MarkerModal({ item, onClose }: Props) {
   return (
@@ -21,6 +25,7 @@ export default function MarkerModal({ item, onClose }: Props) {
             <Text style={styles.modalType}>{item?.type}</Text>
             <Text style={styles.modalDescription}>{item?.description}</Text>
           </ScrollView>
+          <Button onPress={() => {router.navigate('/chat'); onClose();}} variant='tinted'>Czatuj</Button>
         </View>
       </View>
     </Modal>
